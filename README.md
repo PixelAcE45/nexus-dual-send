@@ -1,786 +1,548 @@
-# Nexus Mail Connect
+# Nexus Stabilization
 
-NEXUS EMAIL SYSTEM — DUAL SENDING ARCHITECTURE
+NEXUS / PRISM — COMPLETE APPLICATION DEBUG + STABILIZATION
 
+Repository: https://github.com/PixelAcE45/prism-ai-assistant
 
+Perform a complete diagnostic and stabilization pass on the EXISTING application.
 
-You are working on the Nexus project in this repository.
+This is NOT a redesign and NOT a feature-building task.
 
+The application currently has multiple possible issues across UI performance, authentication, AI integration, state management, database behavior, and previous implementations.
 
+Your job is to inspect the existing codebase first, identify problems, then repair them systematically.
 
-Repository:
+1. FULL CODEBASE AUDIT
 
-https://github.com/PixelAcE45/nexus-workflow-connect.git
+Inspect the entire existing project before making major changes.
 
+Review:
 
+frontend components
 
-OBJECTIVE
+routes
 
+state management
 
+authentication
 
-Upgrade Nexus's email system so users have TWO ways to send emails:
+Supabase integration
 
+database queries
 
+RLS/security policies
 
-1. NEXUS DEFAULT MAIL
+AI integration
 
+API/server functions
 
+conversation handling
 
-Nexus's built-in email sending system.
+task/action system
 
+loading states
 
+error handling
 
-This should work for users without requiring them to connect Gmail.
+theme system
 
+animations
 
+responsive behavior
 
-2. CONNECT GMAIL
+settings
 
+dependencies
 
+environment/secrets handling
 
-Users can optionally connect their own Gmail account using Google OAuth.
+Do NOT blindly rewrite working systems.
 
+Reuse the existing architecture wherever possible.
 
+2. UI PERFORMANCE
 
-When connected, Nexus can send emails through that user's Gmail account.
+The UI currently feels noticeably choppy.
 
+Find the causes rather than simply reducing animation quality.
 
+Inspect for:
 
-The user must be able to choose which sending method Nexus uses.
+unnecessary re-renders
 
+excessive state updates
 
+expensive effects
 
----
+duplicated components
 
+unnecessary network requests
 
+poorly optimized animations
 
-IMPORTANT — FIRST INSPECT THE PROJECT
+layout-triggering animations
 
+excessive blur/shadow computation
 
+unnecessary JavaScript animation loops
 
-Before changing anything:
+components rendering when their data has not changed
 
+Optimize for smooth interaction and stable frame pacing.
 
+Prefer GPU-friendly animation properties such as:
 
-1. Inspect the complete repository.
+transform
 
-2. Identify the current email implementation.
+opacity
 
-3. Identify the current n8n integration/workflows.
+Avoid unnecessary animation of:
 
-4. Identify the backend/API architecture.
+width
 
-5. Identify the authentication system.
+height
 
-6. Identify the database/schema.
+top
 
-7. Identify any existing Gmail integration.
+left
 
-8. Identify the existing Nexus email UI.
+margin
 
-9. Identify environment variables/secrets already being used.
+padding
 
-10. Determine whether email sending currently goes through n8n, a backend API, or another provider.
+Do NOT remove the existing premium animations.
 
+Make them smoother and more efficient.
 
+3. EXISTING UI INTEGRITY
 
-Do NOT blindly rebuild the email system.
+Preserve the current Nexus design.
 
+Do NOT redesign:
 
+layout
 
-Work with the existing architecture wherever possible.
+branding
 
+navigation
 
+typography
 
----
+glassmorphism
 
+light/dark themes
 
+existing visual identity
 
-REQUIRED USER EXPERIENCE
+Only repair visual bugs, broken states, layout issues, responsiveness problems, or performance problems.
 
+The existing UI should remain recognizable.
 
+4. AUTHENTICATION AUDIT
 
-Add an Email Settings section to Nexus.
+Completely test and repair authentication.
 
+Verify:
 
+sign up
 
-It should clearly show:
+login
 
+logout
 
+session persistence
 
-Email Sending
+refresh while logged in
 
+refresh while logged out
 
+protected routes
 
-Nexus Default
+redirects
 
+authentication errors
 
+user identity propagation
 
-Status: Available
+Supabase session handling
 
+profile/user initialization
 
+Test both successful and failed authentication flows.
 
-Description:
+Do not create duplicate authentication systems.
 
+Use the existing Supabase authentication architecture unless it is fundamentally broken.
 
+5. USER DATA ISOLATION
 
-«Send emails through Nexus's built-in email system. No Gmail connection required.»
+Audit all user-specific database access.
 
+Verify that authenticated users can only access their own:
 
+profile
 
-My Gmail
+conversations
 
+messages
 
+tasks
 
-Status: Not Connected / Connected
+memories
 
+workspace data
 
+Inspect and repair RLS policies where necessary.
 
-If not connected:
+Never solve a permissions problem by weakening security.
 
+6. NEXUS AI
 
+Audit the existing AI integration.
 
-[ Connect Gmail ]
+Verify the complete flow:
 
+USER → authenticated session → AI request → secure backend/API layer → OpenRouter → response → Nexus UI
 
+Check:
 
-If connected:
+API request handling
 
+authentication context
 
+error handling
 
-Gmail account connected
+loading state
 
+response parsing
 
+failed requests
 
-[ Disconnect ]
+empty responses
 
+timeout behavior
 
+duplicate requests
 
----
+conversation context
 
+Do NOT replace the existing AI provider.
 
+Do NOT create a second AI integration.
 
-GOOGLE OAUTH
+7. AI RESPONSE EXPERIENCE
 
+Verify that the existing AI response UX works correctly.
 
+The intended behavior is:
 
-Implement Gmail connection using Google OAuth.
+User sends message → subtle thinking state → minimum ~3 second thinking experience when appropriate → smooth response transition → progressive response appearance → properly formatted response
 
+Responses should NOT suddenly appear as one giant block of text.
 
+Preserve the existing response formatting improvements.
 
-DO NOT ask users for:
+Fix any jerky transitions or layout jumps.
 
+8. AI ACTION SYSTEM
 
+Audit the existing AI action/tool system.
 
-- Gmail password
+Verify:
 
-- SMTP password
+create_task
 
-- Google account password
+list_tasks
 
+update_task
 
+delete_task
 
-The user should click:
+Each action must:
 
+Receive valid arguments.
 
+Execute securely for the authenticated user.
 
-Connect Gmail
+Return a reliable success/failure result.
 
+Update the UI correctly.
 
+Never claim success if the backend operation failed.
 
-Then complete Google's authorization flow.
+Do not create duplicate task systems.
 
+9. PROGRESS SUMMARIZATION
 
+Verify the existing Nexus progress-summary capability.
 
-Request only the permissions actually required for sending email.
+When the user asks:
 
+"Catch me up."
 
+"What is my progress?"
 
-Store OAuth credentials securely on the backend.
+"What am I currently working on?"
 
+Nexus should retrieve available user-owned information and summarize it.
 
+It must NOT invent data.
 
-NEVER expose OAuth access tokens or refresh tokens to the frontend.
+If information is unavailable, say so naturally.
 
+10. STATE MANAGEMENT
 
+Look for state synchronization problems between:
 
----
+authentication
 
+AI chat
 
+conversations
 
-SENDING METHOD SELECTOR
+tasks
 
+settings
 
+database state
 
-Give the user a setting:
+UI state
 
+Fix stale state, race conditions, duplicate requests, and inconsistent UI updates.
 
+When backend data changes through Nexus AI, the relevant UI should update without unnecessary full-page reloads.
 
-Default Email Sender
+11. ERROR HANDLING
 
+Replace silent failures with useful user-facing states.
 
+Handle:
 
-○ Nexus Default
+authentication failure
 
-○ My Gmail
+AI failure
 
+network failure
 
+database failure
 
-Rules:
+unauthorized access
 
+malformed AI responses
 
+tool execution failure
 
-If Nexus Default is selected
+missing configuration
 
+Errors should be understandable without exposing technical secrets.
 
+12. LOADING STATES
 
-Send through Nexus's configured email infrastructure.
+Audit all important loading states.
 
+Avoid:
 
+frozen-looking UI
 
-If My Gmail is selected AND Gmail is connected
+sudden content jumps
 
+duplicate loading indicators
 
+infinite loading states
 
-Send through the user's connected Gmail account.
+buttons appearing unresponsive
 
+Use smooth transitions while preserving performance.
 
+13. RESPONSIVE BEHAVIOR
 
-If My Gmail is selected BUT Gmail isn't connected
+Audit desktop, tablet and mobile layouts.
 
+IMPORTANT:
 
+Do not revive or recreate the previously faulty mobile implementation.
 
-Do NOT fail silently.
+Preserve the current intended responsive architecture.
 
+Fix only genuine responsive bugs.
 
+Make sure the UI does not unexpectedly shrink, overlap, or render desktop content incorrectly on smaller screens.
 
-Show:
+14. SETTINGS
 
+Verify existing settings functionality without redesigning the Settings page.
 
+Check that existing preferences actually persist and are applied correctly.
 
-«"Connect your Gmail account to use Gmail as your default sender."»
+Do not add unrelated settings.
 
+15. SECURITY + SECRETS
 
+Perform a security audit of secret handling.
 
-Provide:
+IMPORTANT:
 
+Never place API keys or private credentials in:
 
+frontend source
 
-[ Connect Gmail ]
+README files
 
+public repository files
 
+client-side environment variables
 
----
+database records accessible to users
 
+Use the project's secure Secrets/environment mechanism.
 
+If an exposed credential is found in the repository, DO NOT print it in logs or responses.
 
-AUTOMATIC FALLBACK
+Flag it as compromised and remove the unsafe reference from the application.
 
+Do not expose secrets while debugging.
 
+16. DEPENDENCIES + BUILD
 
-Implement a safe fallback:
+Check for:
 
+broken imports
 
+unused dependencies
 
-If the user has selected Gmail but their Gmail connection becomes invalid/expired/revoked:
+dependency conflicts
 
+TypeScript errors
 
+lint errors
 
-1. Detect the failure.
+build errors
 
-2. Do NOT silently pretend the email was sent.
+runtime console errors
 
-3. Inform the user that Gmail needs to be reconnected.
+failed Supabase functions
 
-4. Offer Nexus Default as an alternative.
+invalid environment references
 
+Fix real errors that affect the application.
 
+Do not perform unnecessary dependency upgrades.
 
-Do not automatically send sensitive/user-intended Gmail messages from another sender without making the user aware.
+17. PERFORMANCE VERIFICATION
 
+After fixes, verify that:
 
+navigation is smooth
 
----
+tabs switch smoothly
 
+AI responses don't cause UI freezes
 
+scrolling remains smooth
 
-NEXUS AI INTEGRATION
+glass effects remain performant
 
+unnecessary renders are reduced
 
+network requests are not duplicated
 
-Nexus should understand commands such as:
+Do not sacrifice the visual quality of the UI just to improve performance.
 
+18. DO NOT ADD NEW FEATURES
 
+During this pass, DO NOT implement:
 
-«"Send Rahul an email saying the meeting is tomorrow."»
+Gmail
 
+Google Calendar
 
+Google Drive
 
-Nexus should determine the user's configured sending method.
+Firecrawl
 
+Slack
 
+Telegram
 
-If:
+Notion
 
+new AI agents
 
+new connectors
 
-Default = Nexus
+new automation systems
 
+Those come AFTER the existing application is stable.
 
+19. WORK ORDER
 
-→ use Nexus Default Mail.
+Follow this order:
 
+Inspect
 
+Identify failures
 
-If:
+Fix authentication/security foundation
 
+Fix database/RLS issues
 
+Fix AI request flow
 
-Default = Gmail
+Fix AI actions
 
+Fix state synchronization
 
+Fix UI performance
 
-→ use the connected Gmail account.
+Fix loading/error states
 
+Fix responsive issues
 
+Verify build/runtime errors
 
-If Gmail is unavailable:
+Perform final regression testing
 
+Do not repeatedly rebuild the same component.
 
+20. FINAL REGRESSION TEST
 
-→ tell the user that Gmail needs to be connected/reconnected.
+Before considering the task complete, verify this complete flow:
 
+SIGN UP → LOGIN → SESSION PERSISTS → OPEN NEXUS → SEND AI MESSAGE → RECEIVE AI RESPONSE → RESPONSE ANIMATES CORRECTLY → CREATE TASK THROUGH AI → TASK APPEARS IN UI → REFRESH → DATA PERSISTS → REQUEST PROGRESS SUMMARY → LOGOUT → LOGIN AGAIN → USER DATA REMAINS AVAILABLE → OTHER USERS CANNOT ACCESS IT
 
+Also verify:
 
----
+no major console errors
 
+no broken routes
 
+no authentication loops
 
-N8N INTEGRATION
+no obvious UI jank
 
+no duplicate AI requests
 
+no exposed secrets
 
-Inspect the existing n8n integration before modifying it.
+no major TypeScript/build errors
 
+IMPORTANT:
 
+Do NOT redesign the application.
 
-If n8n is currently responsible for email workflows, preserve that architecture where practical.
+Do NOT add new features.
 
+Do NOT replace working architecture unnecessarily.
 
+This is a COMPLETE DEBUGGING + STABILIZATION PASS.
 
-Create a clean routing layer:
-
-
-
-Nexus
-
-↓
-
-Email Sending Router
-
-↓
-
-├── Nexus Default Mail
-
-│
-
-└── User Gmail
-
-↓
-
-Google OAuth
-
-↓
-
-Gmail API / existing n8n Gmail workflow
-
-
-
-Do not duplicate email logic unnecessarily.
-
-
-
----
-
-
-
-EMAIL COMPOSER
-
-
-
-Preserve the existing Nexus email composer if one exists.
-
-
-
-It should support:
-
-
-
-- Recipient
-
-- Subject
-
-- Message
-
-- Send
-
-- Sending method indicator
-
-
-
-Example:
-
-
-
-Sending from:
-
-Nexus Default ▾
-
-
-
-or
-
-
-
-Sending from:
-
-your connected Gmail ▾
-
-
-
-The user should be able to override the default sender for an individual email if the existing architecture allows it.
-
-
-
----
-
-
-
-DATABASE
-
-
-
-Inspect the existing database before creating tables.
-
-
-
-If required, create a secure structure for Gmail connections containing only the information necessary for OAuth and account association.
-
-
-
-Associate connections with the authenticated Nexus user.
-
-
-
-Never store Gmail passwords.
-
-
-
-Never store sensitive OAuth credentials in frontend-accessible database fields.
-
-
-
----
-
-
-
-SECURITY
-
-
-
-This is extremely important.
-
-
-
-Never expose:
-
-
-
-- Gmail passwords
-
-- OAuth refresh tokens
-
-- OAuth access tokens
-
-- API keys
-
-- Email provider credentials
-
-
-
-in:
-
-
-
-- frontend JavaScript
-
-- browser localStorage
-
-- client-side environment variables
-
-- public API responses
-
-- GitHub source code
-
-
-
-Use the existing secure backend/secrets architecture.
-
-
-
----
-
-
-
-NEXUS DEFAULT MAIL
-
-
-
-Do not assume which email provider should be used.
-
-
-
-Inspect the existing project first.
-
-
-
-If Nexus already has an email provider configured, reuse it.
-
-
-
-If no provider exists, create the architecture so a backend email provider can be configured through secure environment variables.
-
-
-
-Do NOT hardcode credentials.
-
-
-
-Do NOT require every Nexus user to configure their own SMTP.
-
-
-
-The Nexus Default system should be centrally configured by the Nexus deployment.
-
-
-
----
-
-
-
-UI
-
-
-
-Keep the existing Nexus visual identity.
-
-
-
-Do NOT redesign the entire application.
-
-
-
-Use the existing:
-
-
-
-- Glassmorphism
-
-- Typography
-
-- Animations
-
-- Dark/light themes
-
-- Navigation
-
-- Dashboard components
-
-
-
-Only add the necessary email settings/connectivity UI.
-
-
-
-The Gmail connection interface should feel like a native part of Nexus.
-
-
-
----
-
-
-
-TESTING
-
-
-
-After implementation, test:
-
-
-
-TEST 1
-
-
-
-User with no Gmail connection sends an email.
-
-
-
-Expected:
-
-
-
-Nexus Default Mail → email successfully sent
-
-
-
-TEST 2
-
-
-
-User connects Gmail.
-
-
-
-Expected:
-
-
-
-Google OAuth → Gmail connected
-
-
-
-TEST 3
-
-
-
-User selects Gmail as default.
-
-
-
-Expected:
-
-
-
-Nexus → user's Gmail
-
-
-
-TEST 4
-
-
-
-User switches back to Nexus Default.
-
-
-
-Expected:
-
-
-
-Nexus → Nexus Default Mail
-
-
-
-TEST 5
-
-
-
-Gmail connection is revoked/invalid.
-
-
-
-Expected:
-
-
-
-Nexus detects the problem and asks the user to reconnect.
-
-
-
-TEST 6
-
-
-
-Two different Nexus users connect different Gmail accounts.
-
-
-
-Expected:
-
-
-
-Each user's emails are sent through their own connected Gmail account.
-
-
-
-One user's Gmail credentials must NEVER be used for another user.
-
-
-
----
-
-
-
-ACCEPTANCE CRITERIA
-
-
-
-Do not consider this complete until:
-
-
-
-- Nexus Default Mail works.
-
-- Gmail OAuth connection works.
-
-- Users can connect/disconnect Gmail.
-
-- Users can choose their default sender.
-
-- Nexus respects that choice when sending AI-generated emails.
-
-- Gmail passwords are never requested.
-
-- OAuth credentials remain server-side.
-
-- Different users have isolated Gmail connections.
-
-- Existing n8n functionality remains intact.
-
-- Existing Nexus UI remains intact.
-
-- Existing authentication remains intact.
-
-- The project builds successfully.
-
-- Real email sending is tested for both modes.
-
-
-
-CRITICAL
-
-
-
-Do NOT waste credits rebuilding unrelated parts of Nexus.
-
-
-
-Do NOT redesign Nexus.
-
-
-
-Do NOT replace existing working integrations unnecessarily.
-
-
-
-First inspect the repository and current email/n8n architecture, then implement the smallest reliable change that achieves the complete dual-email system..... Dont worry bro the repo is mine and I give u access perm to extract code and make the instructed changes
+The goal is to leave the existing Nexus application stable, secure, performant and internally consistent so that new connectors and features can safely be added afterward.
 
 This project was built with [Lovable](https://lovable.dev).
 
 ## Build with Lovable
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/8004780f-a784-4a6f-bfa0-dddd1f73ab5d).
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/9a59d87a-f05b-497f-9891-81a78edc3f1f).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
 - **Stay in sync**: every change made in Lovable is committed straight to this repository.
