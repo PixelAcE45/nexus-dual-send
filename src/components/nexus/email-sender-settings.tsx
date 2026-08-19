@@ -77,10 +77,13 @@ export function EmailSenderSettings() {
         <IconTile tone="azure">
           <Mail className="h-[1.05rem] w-[1.05rem]" />
         </IconTile>
-        <SectionTitle
-          title="Email sending"
-          subtitle="Choose how Nexus delivers the mail you and your AI assistant send."
-        />
+        <div className="min-w-0">
+          <SectionTitle title="Email sending" />
+          <p className="text-xs text-muted-foreground">
+            Choose how Nexus delivers the mail you and your AI assistant send.
+          </p>
+        </div>
+
       </div>
 
       {isLoading ? (
