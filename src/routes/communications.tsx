@@ -1,9 +1,22 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Mail, PenLine, Send } from "lucide-react";
+import { Loader2, Mail, PenLine, Send } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { EmailSenderSettings, useEmailStatus } from "@/components/nexus/email-sender-settings";
 import { Dot, GlassPanel, IconTile, PageHeader, SectionTitle } from "@/components/nexus/glass";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { listSentEmails, sendEmail } from "@/lib/email.functions";
 
 export const Route = createFileRoute("/communications")({
   head: () => ({
@@ -12,60 +25,62 @@ export const Route = createFileRoute("/communications")({
       {
         name: "description",
         content:
-          "One inbox in Nexus for threads, mentions and client updates, with AI drafting built in.",
+          "Send email from Nexus Default Mail or your own connected Gmail, with AI drafting built in.",
       },
       { property: "og:title", content: "Communications — Nexus AI OS" },
-      { property: "og:description", content: "Threads, mentions and client updates in one inbox." },
+      {
+        property: "og:description",
+        content: "Send from Nexus Default Mail or your own Gmail, all from one inbox.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CommunicationsPage,
 });
 
-const threads = [
-  {
-    from: "Priya Menon",
-    subject: "Launch checklist review",
-    preview: "I moved the pricing copy to Thursday so design has time to sign off.",
-    time: "12m",
-    unread: true,
-  },
-  {
-    from: "Acme Corp.",
-    subject: "Invoice #2481 received",
-    preview: "Thanks — payment is scheduled for the 20th.",
-    time: "2h",
-    unread: true,
-  },
-  {
-    from: "Daniel Ortiz",
-    subject: "Analytics dashboard feedback",
-    preview: "The retention view is much clearer now. Two small notes inside.",
-    time: "5h",
-    unread: false,
-  },
-  {
-    from: "Nexus Digest",
-    subject: "Your week in review",
-    preview: "41 tasks completed, 18h of focus time, 3 automations triggered.",
-    time: "1d",
-    unread: false,
-  },
-];
+type SenderChoice = "auto" | "nexus" | "gmail";
 
 function CommunicationsPage() {
-  const [active, setActive] = useState(0);
-  const thread = threads[active] ?? threads[0]!;
-  const [reply, setReply] = useState("");
+  const queryClient = useQueryClient();
+  const { data: status } = useEmailStatus();
+  const [to, setTo] = useState("");
+  const [subject, setSubject] = useState("");
+  const [body, setBody] = useState("");
+  const [sender, setSender] = useState<SenderChoice>("auto");
+
+  const sent = useQuery({ queryKey: ["sent-emails"], queryFn: () => listSentEmails() });
+
+  const send = useMutation({
+    mutationFn: () => sendEmail({ data: { to, subject, body, sender } }),
+    onSuccess: (result) => {
+      void queryClient.invalidateQueries({ queryKey: ["sent-emails"] });
+      if (!result.ok) {
+        toast.error("Message not sent", { description: result.error ?? "Sending failed." });
+        return;
+      }
+      setSubject("");
+      setBody("");
+      toast.success(result.sender === "gmail" ? "Sent from your Gmail" : "Sent with Nexus Default Mail", {
+        description: result.fellBack
+          ? "Gmail was unavailable, so Nexus Default Mail delivered it."
+          : `Delivered to ${to}.`,
+      });
+    },
+    onError: (error: Error) => toast.error("Message not sent", { description: error.message }),
+  });
+
+  const canSend = to.trim().length > 3 && subject.trim().length > 0 && body.trim().length > 0;
 
   return (
     <div className="space-y-6">
       <PageHeader
         eyebrow="WORKSPACE"
         title="Communications"
-        description="Threads, mentions and client updates in one calm inbox."
+        description="Send mail through Nexus Default Mail or your own Gmail — one composer, two engines."
         actions={
           <Button
-            onClick={() => toast.success("New message", { description: "Sending arrives with the backend." })}
+            onClick={() => document.getElementById("nexus-compose-to")?.focus()}
             className="brand-gradient rounded-xl text-primary-foreground hover:opacity-90"
           >
             <PenLine className="h-4 w-4" /> Compose
@@ -73,79 +88,119 @@ function CommunicationsPage() {
         }
       />
 
-      <div className="grid gap-5 lg:grid-cols-[340px_minmax(0,1fr)]">
-        <GlassPanel className="p-2">
-          <ul className="divide-y divide-[var(--hairline)]">
-            {threads.map((item, index) => (
-              <li key={item.subject}>
-                <button
-                  type="button"
-                  onClick={() => setActive(index)}
-                  className={
-                    index === active
-                      ? "w-full rounded-xl bg-glass-strong px-3 py-3.5 text-left"
-                      : "w-full rounded-xl px-3 py-3.5 text-left transition-colors hover:bg-glass"
-                  }
-                >
-                  <span className="flex items-center gap-2">
-                    {item.unread ? <Dot className="bg-violet" /> : null}
-                    <span className="min-w-0 flex-1 truncate text-sm font-medium">{item.from}</span>
-                    <span className="shrink-0 text-xs text-muted-foreground">{item.time}</span>
-                  </span>
-                  <span className="mt-1 block truncate text-sm">{item.subject}</span>
-                  <span className="mt-0.5 block truncate text-xs text-muted-foreground">
-                    {item.preview}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </GlassPanel>
+      <EmailSenderSettings />
 
-        <GlassPanel className="flex min-h-[420px] flex-col p-5 sm:p-6">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <GlassPanel className="space-y-4 p-5 sm:p-6">
           <div className="flex items-center gap-3">
-            <IconTile tone="azure">
+            <IconTile tone="violet">
               <Mail className="h-[1.05rem] w-[1.05rem]" />
             </IconTile>
             <div className="min-w-0">
-              <SectionTitle title={thread.subject} />
+              <SectionTitle title="New message" />
               <p className="text-xs text-muted-foreground">
-                {thread.from} · {thread.time} ago
+                {sender === "auto"
+                  ? status?.defaultSender === "gmail" && status.gmailConnected
+                    ? "Using your connected Gmail"
+                    : "Using Nexus Default Mail"
+                  : sender === "gmail"
+                    ? "Using your connected Gmail"
+                    : "Using Nexus Default Mail"}
               </p>
             </div>
           </div>
 
-          <p className="mt-6 flex-1 text-sm leading-relaxed text-muted-foreground">
-            {thread.preview} Nexus will thread the full conversation here once messaging is
-            connected, along with suggested replies drawn from your workspace context.
-          </p>
-
-          <div className="glass mt-5 rounded-2xl p-3">
-            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3">
-              <textarea
-                rows={2}
-                value={reply}
-                onChange={(event) => setReply(event.target.value)}
-                placeholder={`Reply to ${thread.from.split(" ")[0]}…`}
-                className="min-w-0 resize-none bg-transparent px-1 text-sm outline-none placeholder:text-muted-foreground"
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="nexus-compose-to">To</Label>
+              <Input
+                id="nexus-compose-to"
+                type="email"
+                value={to}
+                onChange={(event) => setTo(event.target.value)}
+                placeholder="name@company.com"
+                className="rounded-xl"
               />
-              <Button
-                size="icon"
-                aria-label="Send reply"
-                onClick={() => {
-                  if (!reply.trim()) {
-                    toast("Write a reply first");
-                    return;
-                  }
-                  setReply("");
-                  toast.success("Reply queued");
-                }}
-                className="brand-gradient shrink-0 rounded-xl text-primary-foreground hover:opacity-90"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="nexus-compose-sender">Send with</Label>
+              <Select value={sender} onValueChange={(value) => setSender(value as SenderChoice)}>
+                <SelectTrigger id="nexus-compose-sender" className="rounded-xl">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="auto">My default sender</SelectItem>
+                  <SelectItem value="nexus">Nexus Default Mail</SelectItem>
+                  <SelectItem value="gmail" disabled={!status?.gmailConnected}>
+                    My Gmail{status?.gmailConnected ? "" : " (not connected)"}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="nexus-compose-subject">Subject</Label>
+            <Input
+              id="nexus-compose-subject"
+              value={subject}
+              onChange={(event) => setSubject(event.target.value)}
+              placeholder="Launch checklist review"
+              className="rounded-xl"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="nexus-compose-body">Message</Label>
+            <textarea
+              id="nexus-compose-body"
+              rows={9}
+              value={body}
+              onChange={(event) => setBody(event.target.value)}
+              placeholder="Write your message…"
+              className="glass w-full resize-none rounded-2xl p-3 text-sm outline-none placeholder:text-muted-foreground"
+            />
+          </div>
+
+          <div className="flex justify-end">
+            <Button
+              disabled={!canSend || send.isPending}
+              onClick={() => send.mutate()}
+              className="brand-gradient rounded-xl text-primary-foreground hover:opacity-90"
+            >
+              {send.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              Send
+            </Button>
+          </div>
+        </GlassPanel>
+
+        <GlassPanel className="p-4">
+          <SectionTitle title="Recently sent" />
+          {sent.isLoading ? (
+            <p className="mt-3 text-sm text-muted-foreground">Loading…</p>
+          ) : (sent.data ?? []).length === 0 ? (
+            <p className="mt-3 text-sm text-muted-foreground">
+              Nothing sent yet. Your outgoing mail will be logged here.
+            </p>
+          ) : (
+            <ul className="mt-3 divide-y divide-[var(--hairline)]">
+              {(sent.data ?? []).map((item) => (
+                <li key={item.id} className="px-1 py-3">
+                  <span className="flex items-center gap-2">
+                    {item.status === "sent" ? <Dot className="bg-mint" /> : <Dot className="bg-rose" />}
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium">{item.to_email}</span>
+                    <Badge variant="outline" className="shrink-0 rounded-full text-[10px]">
+                      {item.sender_mode === "gmail" ? "Gmail" : "Nexus"}
+                    </Badge>
+                  </span>
+                  <span className="mt-1 block truncate text-sm">{item.subject}</span>
+                  {item.error ? (
+                    <span className="mt-0.5 block truncate text-xs text-rose">{item.error}</span>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
         </GlassPanel>
       </div>
     </div>
