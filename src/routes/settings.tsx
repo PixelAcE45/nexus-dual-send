@@ -497,7 +497,10 @@ function SettingsPage() {
               Authentication will be connected in a later release.
             </div>
           </GlassPanel>
+
+          <EmailSenderSettings />
         </TabsContent>
+
 
         <TabsContent value="notifications">
           <GlassPanel strong className="p-6">
