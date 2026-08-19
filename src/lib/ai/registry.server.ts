@@ -1,3 +1,4 @@
+import { emailTools } from "./email.tools.server";
 import { taskTools, type ToolContext, type ToolResult } from "./tasks.tools.server";
 
 export type { ToolContext, ToolResult };
@@ -7,6 +8,7 @@ export type { ToolContext, ToolResult };
 // ./tool-schemas.ts. Nothing else in the AI pipeline needs to change.
 export const toolRegistry: Record<string, (ctx: ToolContext, raw: unknown) => Promise<ToolResult>> = {
   ...taskTools,
+  ...emailTools,
 };
 
 export async function runTool(
