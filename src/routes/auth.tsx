@@ -190,6 +190,22 @@ function AuthPage() {
           Continue with Google
         </Button>
 
+        {googleError ? (
+          <div className="mt-3 rounded-xl border border-glass-border bg-glass px-3.5 py-3 text-sm">
+            <p className="text-muted-foreground">{googleError}</p>
+            <button
+              type="button"
+              onClick={google}
+              disabled={busy}
+              className="mt-2 font-medium text-violet hover:underline disabled:opacity-60"
+            >
+              Try again
+            </button>
+          </div>
+        ) : null}
+
+
+
         <p className="mt-6 text-center text-sm text-muted-foreground">
           {mode === "signin" ? "New to Nexus?" : "Already have an account?"}{" "}
           <button
