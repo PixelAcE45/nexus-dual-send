@@ -76,9 +76,12 @@ function AuthPage() {
     }
   };
 
+  const [googleError, setGoogleError] = useState<string | null>(null);
+
   const google = async () => {
     if (busy) return;
     setBusy(true);
+    setGoogleError(null);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
@@ -89,17 +92,35 @@ function AuthPage() {
 
       const { data, error } = await supabase.auth.getUser();
       if (error || !data.user) {
-        throw error ?? new Error("Google did not return a valid sign-in session.");
+        throw error ?? new Error("no_session_after_oauth");
       }
       toast.success("Welcome to Nexus");
       navigate({ to: "/" });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Google sign-in could not be completed.";
-      toast.error("Google sign-in failed", { description: message });
+      const raw = error instanceof Error ? error.message : String(error);
+      // Developer diagnostics: keep the precise OAuth failure in the console,
+      // show a clean message in the UI.
+      console.error("[nexus:auth] Google sign-in failed:", raw, error);
+      const known: Array<[RegExp, string]> = [
+        [/unsupported provider|provider is not enabled/i, "Google sign-in isn't enabled for this project yet."],
+        [/redirect_uri_mismatch/i, "This app's redirect URL isn't authorized in the Google OAuth client."],
+        [/origin_mismatch/i, "This app's origin isn't authorized in the Google OAuth client."],
+        [/invalid_client/i, "The Google OAuth client ID or secret is invalid."],
+        [/invalid_grant/i, "The Google authorization expired. Please try again."],
+        [/access_denied|popup.?closed|cancell?ed/i, "Google sign-in was cancelled."],
+        [/no_session_after_oauth/i, "Google authorized, but the Nexus session could not be created."],
+        [/network|fetch/i, "Network problem while contacting Google."],
+      ];
+      const friendly =
+        known.find(([re]) => re.test(raw))?.[1] ??
+        "Google sign-in couldn't be completed. Please try again.";
+      setGoogleError(friendly);
+      toast.error("Google sign-in failed", { description: friendly });
     } finally {
       setBusy(false);
     }
   };
+
 
   return (
     <div className="relative flex min-h-[100dvh] items-center justify-center px-4 py-10">
