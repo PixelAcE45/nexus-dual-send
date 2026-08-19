@@ -62,9 +62,14 @@ export const updateEmailSettings = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const patch: Record<string, unknown> = { user_id: context.userId };
-    if (data.defaultSender) patch["default_sender"] = data.defaultSender;
-    if (data.fromName !== undefined) patch["from_name"] = data.fromName || null;
+    const patch: {
+      user_id: string;
+      default_sender?: string;
+      from_name?: string | null;
+    } = { user_id: context.userId };
+    if (data.defaultSender) patch.default_sender = data.defaultSender;
+    if (data.fromName !== undefined) patch.from_name = data.fromName || null;
+
 
     const { error } = await context.supabase
       .from("email_settings")
