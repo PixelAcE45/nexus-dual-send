@@ -14,6 +14,99 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_user_connections: {
+        Row: {
+          account_email: string | null
+          connection_key_ciphertext: string
+          connector_id: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_email?: string | null
+          connection_key_ciphertext: string
+          connector_id: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_email?: string | null
+          connection_key_ciphertext?: string
+          connector_id?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      email_messages: {
+        Row: {
+          body: string
+          created_at: string
+          error: string | null
+          id: string
+          provider_message_id: string | null
+          sender_mode: string
+          status: string
+          subject: string
+          to_email: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          provider_message_id?: string | null
+          sender_mode: string
+          status?: string
+          subject: string
+          to_email: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          provider_message_id?: string | null
+          sender_mode?: string
+          status?: string
+          subject?: string
+          to_email?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      email_settings: {
+        Row: {
+          created_at: string
+          default_sender: string
+          from_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          default_sender?: string
+          from_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          default_sender?: string
+          from_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
