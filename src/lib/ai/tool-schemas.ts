@@ -123,6 +123,38 @@ export const toolDeclarations = [
       parameters: { type: "object", properties: {}, additionalProperties: false },
     },
   },
+  {
+    type: "function" as const,
+    function: {
+      name: "get_email_status",
+      description:
+        "Check how the signed-in user can send email: their default sender, whether Nexus Default Mail is ready, and whether their own Gmail is connected. Call before send_email when the user asks which account will be used.",
+      parameters: { type: "object", properties: {}, additionalProperties: false },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "send_email",
+      description:
+        "Send an email on behalf of the signed-in user. Uses their own connected Gmail when that is their default (or when sender is 'gmail'), otherwise Nexus Default Mail, and automatically falls back to Nexus Default Mail if Gmail fails. Only call after the user has confirmed the recipient, subject and message.",
+      parameters: {
+        type: "object",
+        properties: {
+          to: { type: "string", description: "Recipient email address." },
+          subject: { type: "string" },
+          body: { type: "string", description: "Plain-text message body." },
+          sender: {
+            type: "string",
+            enum: ["auto", "nexus", "gmail"],
+            description: "Which sender to use. Defaults to 'auto' (the user's chosen default).",
+          },
+        },
+        required: ["to", "subject", "body"],
+        additionalProperties: false,
+      },
+    },
+  },
 ];
 
-export const MUTATING_TOOLS = ["create_task", "update_task", "delete_task"];
+export const MUTATING_TOOLS = ["create_task", "update_task", "delete_task", "send_email"];

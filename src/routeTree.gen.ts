@@ -21,6 +21,7 @@ import { Route as KnowledgeRouteImport } from './routes/knowledge'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as WorkspacesRouteImport } from './routes/workspaces'
+import { Route as OauthGoogleMailReturnRouteImport } from './routes/oauth/google-mail/return'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -82,6 +83,11 @@ const WorkspacesRoute = WorkspacesRouteImport.update({
   path: '/workspaces',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OauthGoogleMailReturnRoute = OauthGoogleMailReturnRouteImport.update({
+  id: '/oauth/google-mail/return',
+  path: '/oauth/google-mail/return',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/tasks': typeof TasksRoute
   '/workspaces': typeof WorkspacesRoute
+  '/oauth/google-mail/return': typeof OauthGoogleMailReturnRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/tasks': typeof TasksRoute
   '/workspaces': typeof WorkspacesRoute
+  '/oauth/google-mail/return': typeof OauthGoogleMailReturnRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/tasks': typeof TasksRoute
   '/workspaces': typeof WorkspacesRoute
+  '/oauth/google-mail/return': typeof OauthGoogleMailReturnRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tasks'
     | '/workspaces'
+    | '/oauth/google-mail/return'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -155,6 +165,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tasks'
     | '/workspaces'
+    | '/oauth/google-mail/return'
   id:
     | '__root__'
     | '/'
@@ -169,6 +180,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tasks'
     | '/workspaces'
+    | '/oauth/google-mail/return'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -184,6 +196,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   TasksRoute: typeof TasksRoute
   WorkspacesRoute: typeof WorkspacesRoute
+  OauthGoogleMailReturnRoute: typeof OauthGoogleMailReturnRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -272,6 +285,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspacesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/oauth/google-mail/return': {
+      id: '/oauth/google-mail/return'
+      path: '/oauth/google-mail/return'
+      fullPath: '/oauth/google-mail/return'
+      preLoaderRoute: typeof OauthGoogleMailReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -288,6 +308,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   TasksRoute: TasksRoute,
   WorkspacesRoute: WorkspacesRoute,
+  OauthGoogleMailReturnRoute: OauthGoogleMailReturnRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

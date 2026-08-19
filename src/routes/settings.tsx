@@ -23,7 +23,9 @@ import {
   MATERIAL_RANGE,
   type Motion,
 } from "@/components/nexus/appearance-provider";
+import { EmailSenderSettings } from "@/components/nexus/email-sender-settings";
 import { GlassPanel, IconTile, PageHeader, SectionTitle } from "@/components/nexus/glass";
+
 
 import { useLayoutPreview, type LayoutPreview } from "@/components/nexus/layout-provider";
 import { useTheme, type ThemePreference } from "@/components/nexus/theme-provider";
@@ -497,7 +499,10 @@ function SettingsPage() {
               Authentication will be connected in a later release.
             </div>
           </GlassPanel>
+
+          <EmailSenderSettings />
         </TabsContent>
+
 
         <TabsContent value="notifications">
           <GlassPanel strong className="p-6">
