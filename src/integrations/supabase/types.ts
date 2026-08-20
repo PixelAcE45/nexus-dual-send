@@ -173,6 +173,75 @@ export type Database = {
         }
         Relationships: []
       }
+      user_integrations: {
+        Row: {
+          account_label: string | null
+          connected_at: string | null
+          created_at: string
+          id: string
+          last_error: string | null
+          metadata: Json
+          provider: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_label?: string | null
+          connected_at?: string | null
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          metadata?: Json
+          provider: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_label?: string | null
+          connected_at?: string | null
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          metadata?: Json
+          provider?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          ai_preferences: Json
+          created_at: string
+          integration_preferences: Json
+          preferences: Json
+          theme: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_preferences?: Json
+          created_at?: string
+          integration_preferences?: Json
+          preferences?: Json
+          theme?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_preferences?: Json
+          created_at?: string
+          integration_preferences?: Json
+          preferences?: Json
+          theme?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
