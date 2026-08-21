@@ -126,7 +126,7 @@ Current date and time (UTC): ${new Date().toISOString()}`;
 
       if (toolCalls.length === 0) {
         const text = message?.content?.trim() || message?.reasoning?.trim();
-        if (text) return { text, mutated };
+        if (text) return { text, mutated, sources: [...sourceMap.values()] };
 
         // Some models occasionally return an empty turn (often after tool
         // results, or when the output budget was spent on reasoning). Nudge
@@ -136,6 +136,7 @@ Current date and time (UTC): ${new Date().toISOString()}`;
           return {
             text: "I wasn't able to put together an answer for that. Could you try rephrasing it?",
             mutated,
+            sources: [...sourceMap.values()],
           };
         }
         emptyTurns += 1;
@@ -163,6 +164,24 @@ Current date and time (UTC): ${new Date().toISOString()}`;
         }
         const result = await runTool(call.function.name, args, toolCtx);
         if (result.ok && MUTATING_TOOLS.includes(call.function.name)) mutated = true;
+
+        // Collect real research sources so the UI can render source cards.
+        // Only URLs Firecrawl actually returned ever reach the client.
+        const data = (result as { data?: unknown }).data as
+          | { sources?: Array<{ title?: string; url?: string; domain?: string; excerpt?: string }> }
+          | undefined;
+        if (result.ok && Array.isArray(data?.sources)) {
+          for (const source of data.sources) {
+            if (!source?.url) continue;
+            sourceMap.set(source.url, {
+              title: source.title ?? source.url,
+              url: source.url,
+              domain: source.domain ?? "",
+              excerpt: source.excerpt ?? "",
+            });
+          }
+        }
+
         messages.push({
           role: "tool",
           tool_call_id: call.id,
@@ -174,5 +193,6 @@ Current date and time (UTC): ${new Date().toISOString()}`;
     return {
       text: "I ran into a loop working on that and stopped. Could you rephrase the request?",
       mutated,
+      sources: [...sourceMap.values()],
     };
   });
