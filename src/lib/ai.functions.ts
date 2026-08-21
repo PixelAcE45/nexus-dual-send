@@ -64,6 +64,7 @@ Current date and time (UTC): ${new Date().toISOString()}`;
 
     let mutated = false;
     let emptyTurns = 0;
+    const sourceMap = new Map<string, { title: string; url: string; domain: string; excerpt: string }>();
 
     for (let step = 0; step < 6; step += 1) {
       let response: Response;
