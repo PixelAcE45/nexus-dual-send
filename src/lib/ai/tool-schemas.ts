@@ -155,6 +155,43 @@ export const toolDeclarations = [
       },
     },
   },
+  {
+    type: "function" as const,
+    function: {
+      name: "web_search",
+      description:
+        "Search the live web and return real sources with their content. Use whenever the user asks to research a topic, wants current/recent information, news, prices, product comparisons, documentation, or anything you are not certain about. Only cite URLs this tool returns.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string", description: "Focused search query." },
+          limit: { type: "number", description: "How many results to read (1-8, default 5)." },
+          scrape_content: {
+            type: "boolean",
+            description: "Read the full page content of each result. Defaults to true.",
+          },
+        },
+        required: ["query"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function" as const,
+    function: {
+      name: "scrape_url",
+      description:
+        "Read one public web page and return its title, description, main content as Markdown and its links. Use when the user pastes or names a specific URL.",
+      parameters: {
+        type: "object",
+        properties: {
+          url: { type: "string", description: "Full http(s) URL of a public page." },
+        },
+        required: ["url"],
+        additionalProperties: false,
+      },
+    },
+  },
 ];
 
 export const MUTATING_TOOLS = ["create_task", "update_task", "delete_task", "send_email"];
