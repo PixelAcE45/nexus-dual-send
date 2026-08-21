@@ -73,14 +73,14 @@ export function AiResponse({
   );
 }
 
-export function ThinkingBubble() {
+export function ThinkingBubble({ label = "Nexus is thinking" }: { label?: string }) {
   return (
     <div className="glass inline-flex items-center gap-2.5 rounded-2xl px-4 py-3">
       <span className="relative grid h-4 w-4 place-items-center">
         <span className="absolute h-4 w-4 rounded-full bg-violet/30 nexus-thinking-pulse" />
         <span className="h-1.5 w-1.5 rounded-full bg-violet" />
       </span>
-      <span className="text-sm text-muted-foreground">Nexus is thinking</span>
+      <span className="text-sm text-muted-foreground">{label}</span>
       <span className="flex items-center gap-1" aria-hidden>
         {[0, 1, 2].map((index) => (
           <span

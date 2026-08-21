@@ -35,10 +35,24 @@ type Message = {
   text: string;
   animate?: boolean;
   error?: boolean;
+  sources?: ResearchSourceCard[];
 };
 
 // Just enough of a beat that the thinking state reads as intentional.
 const MIN_THINKING_MS = 700;
+
+const RESEARCH_PHASES = [
+  "Searching the web…",
+  "Reading sources…",
+  "Analyzing information…",
+];
+
+const RESEARCH_HINT =
+  /\b(research|latest|news|search the web|look ?up|find out|current|today|https?:\/\/|www\.)\b/i;
+
+function isResearchPrompt(prompt: string) {
+  return RESEARCH_HINT.test(prompt);
+}
 
 
 
