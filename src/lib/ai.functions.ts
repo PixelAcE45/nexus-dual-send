@@ -39,7 +39,7 @@ export const nexusChat = createServerFn({ method: "POST" })
 
     const systemPrompt = `You are Nexus, a calm and precise AI operating system for knowledge work, and an active co-pilot inside the user's Nexus workspace.
 
-You can operate the workspace through tools: create_task, list_tasks, update_task, delete_task, get_workspace_summary, get_email_status and send_email. Tools always act on the signed-in user's own data.
+You can operate the workspace through tools: create_task, list_tasks, update_task, delete_task, get_workspace_summary, get_email_status, send_email, web_search and scrape_url. Tools always act on the signed-in user's own data.
 
 Rules:
 - When the user asks you to add, change, complete or remove work, call the matching task tool instead of only describing it.
@@ -48,7 +48,8 @@ Rules:
 - If required information is missing (for example a task description), ask one short clarifying question instead of inventing it.
 - Use the conversation so far to resolve references like "it" or "that task".
 - Email: Nexus can send mail two ways — Nexus Default Mail (built in, needs no setup by the user) and the user's own Gmail if they connected it in Communications. Use send_email to actually send; it picks the user's default sender and falls back to Nexus Default Mail if Gmail fails. Always confirm recipient, subject and message with the user before sending, then report which account it was sent from.
-- The connected data sources are tasks, email and, when active, n8n automations. If asked about calendar, files or notes, say those are not connected yet.
+- Web research: call web_search whenever the user asks you to research something, wants current or recent information, or asks about anything outside your training data. Call scrape_url when they give you a specific link. Base research answers only on the content those tools return, cite claims with the exact URLs returned, and never invent a source, quote or link. If research fails or returns nothing, say so plainly instead of answering from memory.
+- The connected data sources are tasks, email, live web research and, when active, n8n automations. If asked about calendar, files or notes, say those are not connected yet.
 - Never reveal keys, ids or technical internals unless the user needs an id.
 - Do not end replies with "Would you like me to help with anything else?".${n8nSection}
 
@@ -63,6 +64,7 @@ Current date and time (UTC): ${new Date().toISOString()}`;
 
     let mutated = false;
     let emptyTurns = 0;
+    const sourceMap = new Map<string, { title: string; url: string; domain: string; excerpt: string }>();
 
     for (let step = 0; step < 6; step += 1) {
       let response: Response;
@@ -124,7 +126,7 @@ Current date and time (UTC): ${new Date().toISOString()}`;
 
       if (toolCalls.length === 0) {
         const text = message?.content?.trim() || message?.reasoning?.trim();
-        if (text) return { text, mutated };
+        if (text) return { text, mutated, sources: [...sourceMap.values()] };
 
         // Some models occasionally return an empty turn (often after tool
         // results, or when the output budget was spent on reasoning). Nudge
@@ -134,6 +136,7 @@ Current date and time (UTC): ${new Date().toISOString()}`;
           return {
             text: "I wasn't able to put together an answer for that. Could you try rephrasing it?",
             mutated,
+            sources: [...sourceMap.values()],
           };
         }
         emptyTurns += 1;
@@ -161,6 +164,24 @@ Current date and time (UTC): ${new Date().toISOString()}`;
         }
         const result = await runTool(call.function.name, args, toolCtx);
         if (result.ok && MUTATING_TOOLS.includes(call.function.name)) mutated = true;
+
+        // Collect real research sources so the UI can render source cards.
+        // Only URLs Firecrawl actually returned ever reach the client.
+        const data = (result as { data?: unknown }).data as
+          | { sources?: Array<{ title?: string; url?: string; domain?: string; excerpt?: string }> }
+          | undefined;
+        if (result.ok && Array.isArray(data?.sources)) {
+          for (const source of data.sources) {
+            if (!source?.url) continue;
+            sourceMap.set(source.url, {
+              title: source.title ?? source.url,
+              url: source.url,
+              domain: source.domain ?? "",
+              excerpt: source.excerpt ?? "",
+            });
+          }
+        }
+
         messages.push({
           role: "tool",
           tool_call_id: call.id,
@@ -172,5 +193,6 @@ Current date and time (UTC): ${new Date().toISOString()}`;
     return {
       text: "I ran into a loop working on that and stopped. Could you rephrase the request?",
       mutated,
+      sources: [...sourceMap.values()],
     };
   });
