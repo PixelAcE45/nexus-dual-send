@@ -1,4 +1,5 @@
 import { emailTools } from "./email.tools.server";
+import { researchTools } from "./research.tools.server";
 import { taskTools, type ToolContext, type ToolResult } from "./tasks.tools.server";
 
 export type { ToolContext, ToolResult };
@@ -9,6 +10,7 @@ export type { ToolContext, ToolResult };
 export const toolRegistry: Record<string, (ctx: ToolContext, raw: unknown) => Promise<ToolResult>> = {
   ...taskTools,
   ...emailTools,
+  ...researchTools,
 };
 
 export async function runTool(
