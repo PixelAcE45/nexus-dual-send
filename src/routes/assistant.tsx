@@ -81,6 +81,7 @@ function AssistantPage() {
   const [messages, setMessages] = useState(initialMessages);
   const [draft, setDraft] = useState("");
   const [pending, setPending] = useState(false);
+  const [phase, setPhase] = useState<string | null>(null);
   const chat = useServerFn(nexusChat);
   const queryClient = useQueryClient();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -98,6 +99,21 @@ function AssistantPage() {
     setMessages(next);
     setDraft("");
     setPending(true);
+
+    // Research runs go through search → read → analyse on the server; step the
+    // label so the wait reads as progress rather than a stalled spinner.
+    let phaseTimer: number | undefined;
+    if (isResearchPrompt(prompt)) {
+      let index = 0;
+      setPhase(RESEARCH_PHASES[0]!);
+      phaseTimer = window.setInterval(() => {
+        index = Math.min(index + 1, RESEARCH_PHASES.length - 1);
+        setPhase(RESEARCH_PHASES[index]!);
+      }, 4000);
+    } else {
+      setPhase(null);
+    }
+
     const startedAt = Date.now();
     try {
       const result = await chat({
@@ -116,9 +132,11 @@ function AssistantPage() {
       if (result.mutated) {
         void queryClient.invalidateQueries({ queryKey: ["tasks"] });
       }
+      const sources = (result.sources ?? []) as ResearchSourceCard[];
+      if (sources.length > 0) toast.success("Research complete");
       setMessages((current) => [
         ...current,
-        { id: id + 1, role: "nexus", text: result.text, animate: true },
+        { id: id + 1, role: "nexus", text: result.text, animate: true, sources },
       ]);
     } catch (error) {
       const wait = MIN_THINKING_MS - (Date.now() - startedAt);
