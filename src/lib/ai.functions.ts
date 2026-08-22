@@ -66,10 +66,14 @@ Current date and time (UTC): ${new Date().toISOString()}`;
     let emptyTurns = 0;
     const sourceMap = new Map<string, { title: string; url: string; domain: string; excerpt: string }>();
 
-    for (let step = 0; step < 6; step += 1) {
+    for (let step = 0; step < 4; step += 1) {
       let response: Response;
+      // Hard timeout so a stalled upstream never leaves the user waiting forever.
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 60_000);
       try {
         response = await fetch(provider.url, {
+          signal: controller.signal,
           method: "POST",
           headers: {
             Authorization: `Bearer ${provider.apiKey}`,
@@ -84,8 +88,12 @@ Current date and time (UTC): ${new Date().toISOString()}`;
             max_tokens: provider.maxOutputTokens,
           }),
         });
-      } catch {
+      } catch (error) {
+        if ((error as Error)?.name === "AbortError")
+          throw new Error("Nexus's AI core took too long to answer. Please try again.");
         throw new Error("Nexus temporarily couldn't reach its AI core. Please try again.");
+      } finally {
+        clearTimeout(timeout);
       }
 
       if (!response.ok) {

@@ -10,7 +10,8 @@ const GATEWAY_V2 = "https://connector-gateway.lovable.dev/firecrawl/v2";
 const DIRECT_V2 = "https://api.firecrawl.dev/v2";
 const REQUEST_TIMEOUT_MS = 45_000;
 const MAX_MARKDOWN_CHARS = 6_000;
-const CACHE_TTL_MS = 5 * 60 * 1000;
+// Short TTL: research answers must reflect current information.
+const CACHE_TTL_MS = 60 * 1000;
 
 export type ResearchSource = {
   title: string;
