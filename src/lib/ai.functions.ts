@@ -70,11 +70,11 @@ Current date and time (UTC): ${new Date().toISOString()}`;
     let emptyTurns = 0;
     const sourceMap = new Map<string, { title: string; url: string; domain: string; excerpt: string }>();
 
-    for (let step = 0; step < 4; step += 1) {
+    for (let step = 0; step < 3; step += 1) {
       let response: Response;
       // Hard timeout so a stalled upstream never leaves the user waiting forever.
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 60_000);
+      const timeout = setTimeout(() => controller.abort(), 45_000);
       try {
         response = await fetch(provider.url, {
           signal: controller.signal,
