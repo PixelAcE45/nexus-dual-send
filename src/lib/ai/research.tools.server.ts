@@ -20,8 +20,8 @@ export const researchTools: Record<
     const { searchWeb, FirecrawlError } = await import("./firecrawl.server");
     try {
       const sources = await searchWeb(args.query, {
-        limit: args.limit,
-        scrapeContent: args.scrape_content,
+        ...(args.limit === undefined ? {} : { limit: args.limit }),
+        ...(args.scrape_content === undefined ? {} : { scrapeContent: args.scrape_content }),
       });
       if (sources.length === 0) {
         return { ok: true, data: { sources: [], note: "No web results were found for that query." } } as ToolResult;
