@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { AiResponse, ThinkingBubble } from "@/components/nexus/ai-response";
 import { GlassPanel, IconTile, PageHeader, SectionTitle } from "@/components/nexus/glass";
 import { Button } from "@/components/ui/button";
+import { SourceCards, type ResearchSourceCard } from "@/components/nexus/source-cards";
 
 
 export const Route = createFileRoute("/assistant")({
@@ -39,10 +40,10 @@ type Message = {
 };
 
 // Just enough of a beat that the thinking state reads as intentional.
-const MIN_THINKING_MS = 700;
+const MIN_THINKING_MS = 250;
 
 const RESEARCH_PHASES = [
-  "Searching the web…",
+  "Searching the internet…",
   "Reading sources…",
   "Analyzing information…",
 ];
@@ -154,6 +155,8 @@ function AssistantPage() {
       ]);
 
     } finally {
+      if (phaseTimer !== undefined) window.clearInterval(phaseTimer);
+      setPhase(null);
       setPending(false);
     }
   };
@@ -207,7 +210,12 @@ function AssistantPage() {
                   {message.role === "user" ? (
                     <span className="whitespace-pre-wrap">{message.text}</span>
                   ) : (
-                    <AiResponse text={message.text} animate={message.animate === true} />
+                    <>
+                      <AiResponse text={message.text} animate={message.animate === true} />
+                      {message.sources && message.sources.length > 0 ? (
+                        <SourceCards sources={message.sources} />
+                      ) : null}
+                    </>
                   )}
                 </div>
               </div>
@@ -218,7 +226,7 @@ function AssistantPage() {
                 <IconTile tone="violet" className="h-9 w-9">
                   <Bot className="h-4 w-4" />
                 </IconTile>
-                <ThinkingBubble />
+                <ThinkingBubble label={phase ?? "Nexus is thinking"} />
               </div>
             ) : null}
           </div>
@@ -237,7 +245,7 @@ function AssistantPage() {
                   }
                 }}
                 disabled={pending}
-                placeholder={pending ? "Nexus is thinking…" : "Message Nexus…"}
+                placeholder={pending ? `${phase ?? "Nexus is thinking"}…` : "Message Nexus…"}
                 className="min-w-0 resize-none bg-transparent px-1 text-sm outline-none placeholder:text-muted-foreground"
               />
               <Button
