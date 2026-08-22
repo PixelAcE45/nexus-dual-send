@@ -14,7 +14,8 @@ export const NEXUS_MODEL = {
   label: "NVIDIA Nemotron 3 Ultra",
   /** Nemotron 3 Ultra context window on OpenRouter. */
   contextWindow: 512288,
-  maxOutputTokens: 4096,
+  /** Kept tight on purpose: Nexus answers short unless asked to expand. */
+  maxOutputTokens: 1200,
   temperature: 0.4,
 } as const;
 
